@@ -5,9 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "benchmark": "node ./test/harness ./benchmark.js",
-    "test": "node ./test/harness ./test",
-    "coverage": "nyc npm test && npm run coveralls",
-    "coveralls": "npm run coverage && nyc report --reporter=lcov | coveralls",
+    "test": "nyc node ./test/harness ./test",
+    "coveralls": "nyc report --reporter=lcov | coveralls",
     "compile": "babel -d lib/ src/",
     "prepublish": "npm test && npm run compile"
   },

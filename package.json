@@ -1,0 +1,36 @@
+{
+  "name": "@f5io/jsonpath",
+  "version": "1.0.0",
+  "description": "Performant JSONPath implementation",
+  "main": "lib/index.js",
+  "scripts": {
+    "benchmark": "node ./harness ./benchmark.js",
+    "test": "node ./harness.js ./test",
+    "compile": "babel -d lib/ src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/f5io/jsonpath.git"
+  },
+  "keywords": [
+    "jsonpath"
+  ],
+  "author": "Joe Harlow",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/f5io/jsonpath/issues"
+  },
+  "homepage": "https://github.com/f5io/jsonpath#readme",
+  "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-2": "^6.11.0",
+    "babel-register": "^6.9.0",
+    "benchmark": "^2.1.0",
+    "glob": "^7.0.5",
+    "jsonpath": "^0.2.6",
+    "jsonpath-plus": "^0.15.0",
+    "tape": "^4.6.0"
+  }
+}

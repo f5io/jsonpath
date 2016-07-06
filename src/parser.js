@@ -8,7 +8,6 @@ function parser(tokens) {
     try {
       return parse(...args);
     } catch(e) {
-      console.error(e);
       throw new Error(`Unknown token type: ${type}`);
     }
   }, []);

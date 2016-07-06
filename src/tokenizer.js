@@ -10,7 +10,6 @@ function tokenizer(input, output = []) {
     output.push({ type, value, parse });
     return tokenizer(input.slice(length), output);
   } catch(e) {
-    console.error(e);
-    throw new Error('Found no matching rule.');
+    throw new Error(`Found no matching rule: ${input}`);
   }
 };

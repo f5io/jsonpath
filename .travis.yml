@@ -1,0 +1,5 @@
+language: node_js
+node_js:
+  - "v5.11.1"
+after_script:
+  - npm run-script coveralls

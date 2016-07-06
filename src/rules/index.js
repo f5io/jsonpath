@@ -20,7 +20,6 @@ const rules = {
     re: /^\.{2}/,
     parse: function recurse(acc, { value }, i, arr) {
       function search(x, p) {
-        if (!x) return x;
         let a = [];
         for (const k in x) {
           if (k === p) a = a.concat(x[k]);
@@ -38,7 +37,7 @@ const rules = {
   },
   [5]: {
     type: 'prop',
-    re: /^(\w[^\W]+)/,
+    re: /^([A-Za-z][^\W]*)/,
     parse: function prop(acc, { value }, i, arr) {
       const prev = arr[i - 1];
       if (prev && prev.type === 'recurse') return acc;
@@ -74,11 +73,11 @@ const rules = {
     re: /^\!\(([^$]+)\)/,
     map: m => m[1],
     parse: function mexpr(acc, { value }) {
-      const fn = new Function('y', 'i', `return ${value.replace(/@/g, 'y').replace(/%/g, 'i')}`);
+      const fn = new Function('y', `return ${value.replace(/@/g, 'y')}`);
       const getProps = x =>
         Array.isArray(x) ?
-          x.map((y, i) => fn(y, y.$index || i)) :
-          fn(x, x.$index || 0);
+          x.map((y, i) => fn(y)) :
+          fn(x);
       return acc.concat(map(getProps));
     }
   },
@@ -96,26 +95,26 @@ const rules = {
     re: /^\<(String|Number|int|float)\>$/,
     map: m => m[1],
     parse: function coerce(acc, { value }) {
-      let fn = x => x;
-        switch(value) {
-          case 'String':
-            fn = String;
-            break;
-          case 'Number':
-            fn = Number;
-            break;
-          case 'int':
-            fn = x => parseInt(x, 10);
-            break;
-          case 'float':
-            fn = parseFloat;
-            break;
-        }
-        const getProps = x =>
-          Array.isArray(x) ?
-            x.map(fn) :
-            fn(x);
-        return acc.concat(map(getProps));
+      let fn;
+      switch(value) {
+        case 'String':
+          fn = String;
+          break;
+        case 'Number':
+          fn = Number;
+          break;
+        case 'int':
+          fn = x => parseInt(x, 10);
+          break;
+        case 'float':
+          fn = parseFloat;
+          break;
+      }
+      const getProps = x =>
+        Array.isArray(x) ?
+          x.map(fn) :
+          fn(x);
+      return acc.concat(map(getProps));
     }
   },
   [17]: {
@@ -149,7 +148,7 @@ const rules = {
       const getProps = x =>
         Array.isArray(x) ?
           x.map(y => value.reduce((acc, z) => (acc.push(y[z]), acc), [])) :
-          value.reduce((acc, z) => (acc.push(y[z]), acc), []);
+          value.reduce((acc, z) => (acc.push(x[z]), acc), []);
       return acc.concat(map(getProps));
     }
   },
@@ -161,7 +160,7 @@ const rules = {
       const getProps = x =>
         Array.isArray(x) ?
           x.map(y => value.reduce((acc, z) => (acc[z] = y[z], acc), {})) :
-          value.reduce((acc, z) => (acc[z] = y[z], acc), {});
+          value.reduce((acc, z) => (acc[z] = x[z], acc), {});
       return acc.concat(map(getProps));
     }
   }

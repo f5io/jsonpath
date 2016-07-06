@@ -1,2 +1,2 @@
 # jsonpath
-Performance JSONPath implementation that focusses on results
+Performant JSONPath implementation that focusses on results

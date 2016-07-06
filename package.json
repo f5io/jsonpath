@@ -6,7 +6,7 @@
   "scripts": {
     "benchmark": "node ./test/harness ./benchmark.js",
     "test": "nyc node ./test/harness ./test",
-    "coveralls": "nyc report --reporter=lcov | coveralls",
+    "coveralls": "nyc report --reporter=lcov && cat ./coverage/lcov.info | coveralls",
     "compile": "babel -d lib/ src/",
     "prepublish": "npm test && npm run compile"
   },

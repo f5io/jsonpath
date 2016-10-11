@@ -37,7 +37,7 @@ const rules = {
   },
   [5]: {
     type: 'prop',
-    re: /^([A-Za-z][^\W]*)/,
+    re: /^([_A-Za-z][^\W]*)/,
     parse: function prop(acc, { value }, i, arr) {
       const prev = arr[i - 1];
       if (prev && prev.type === 'recurse') return acc;

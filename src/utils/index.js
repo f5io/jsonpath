@@ -16,3 +16,13 @@ export const isPlainObject = o => {
   if (o.constructor.prototype.hasOwnProperty('isPrototypeOf') === false) return false;
   return true;
 };
+
+export const mapFilter = f => x => {
+  const output = [];
+  let xi;
+  while (xi = x.shift()) {
+    const result = f(xi);
+    if (typeof result !== 'undefined') output.push(result);
+  }
+  return output;
+};

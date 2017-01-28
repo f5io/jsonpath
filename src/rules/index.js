@@ -1,6 +1,6 @@
 import tokenizer from '../tokenizer';
 import parser from '../parser';
-import { Identity, head, map, isPlainObject } from '../utils';
+import { Identity, head, map, mapFilter, isPlainObject } from '../utils';
 
 const rules = {
   [1]: {
@@ -27,7 +27,7 @@ const rules = {
             a = a.concat(search(x[k], p));
         }
         return a;
-      };
+      }
 
       const next = arr[i + 1];
       if (next && next.type === 'prop')
@@ -41,12 +41,12 @@ const rules = {
     parse: function prop(acc, { value }, i, arr) {
       const prev = arr[i - 1];
       if (prev && prev.type === 'recurse') return acc;
-      
+
       const getProps = x =>
         Array.isArray(x) ?
-          x.map(y => y[value]) :
+          mapFilter(y => y[value])(x) :
           x[value];
-      
+
       return acc.concat(map(getProps));
     }
   },
@@ -189,4 +189,4 @@ function getMatch(str) {
     parse,
     value: map(mapRes)
   };
-};
+}

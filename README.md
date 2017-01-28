@@ -6,19 +6,38 @@
 ---
 Performant JSONPath implementation that focusses on results
 
+**Features**
+
+- Fast
+- Extended syntax support
+- Error safe, using a simple Maybe functor under the hood
+- Memoized compilation of queries
+- 100% code coverage
+
+**Syntax**
+
+COMING SOON
+
 **Installation**
+
 ```bash
-$npm install --save @f5io/jsonpath
+$ npm install --save @f5io/jsonpath
 ```
 or if you have yarn installed on your machine
 
 ```bash
-$yarn add @f5io/jsonpath
+$ yarn add @f5io/jsonpath
 ```
 
 **Usage**
+
 ```js
-var jp = require('@f5io/jsonpath');
-var jsonPathQueryStr = "$..h[?(@.foo>13)]";
-var result = jp(jsonPathQueryStr,jsonObject);
+const jp = require('@f5io/jsonpath');
+const jsonPathQueryStr = '$..h[?(@.foo>13)]';
+const result = jp(jsonPathQueryStr,jsonObject);
 ```
+
+**Contributors**
+
+- Joe Harlow [@f5io](https://github.com/f5io)
+- Amit Gupta [@amitguptagql](https://github.com/amitguptagwl)

@@ -20,11 +20,11 @@ const measure = (name, fn, ...args) => {
   return result;
 };
 
-const runQueries = (test, queries, expected) => {
+const runQueries = (test, queries, expected, d = data) => {
   test.plan(queries.length);
   queries.forEach(q => {
     const qy = measure(`parse: '${q}'`, query, q);
-    const result = measure(`query: '${q}'`, qy, data);
+    const result = measure(`query: '${q}'`, qy, d);
     test.deepEquals(result, expected, `'${q}' should return expected results`);
   });
 };
@@ -270,4 +270,21 @@ test('get bicycle with omember', t => {
     '$.store.bicycle{"color"}'
   ];
   runQueries(t, queries, expected);
+});
+
+test('changejs example', t => {
+  const expected = [
+    [ 1, 2, 3 ], [ 4, 5, 6 ],
+    12, 13.5, 11.8,
+    [ 1, 2, 3 ], [ 4, 5, 6 ],
+    12, 13.5, 11.8,
+    [ 1, 2, 3 ], [ 4, 5, 6 ],
+    12, 13.5, 11.8,
+    [ 1, 2, 3 ], [ 4, 5, 6 ],
+    12, 13.5, 11.8
+  ];
+  const queries = [
+    '$..h[*].foo'
+  ];
+  runQueries(t, queries, expected, require('./change.json'));
 });

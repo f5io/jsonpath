@@ -12,9 +12,9 @@ class Maybe {
   }
   get() {
     return this.value;
-  }  
-};
+  }
+}
 
 function maybe(v) {
   return new Maybe(v);
-};
+}

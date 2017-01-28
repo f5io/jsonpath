@@ -1,6 +1,6 @@
 {
   "name": "@f5io/jsonpath",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Performant JSONPath implementation",
   "main": "lib/index.js",
   "scripts": {

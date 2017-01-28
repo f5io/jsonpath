@@ -19,8 +19,9 @@ export const isPlainObject = o => {
 
 export const mapFilter = f => x => {
   const output = [];
+  const input = x.slice();
   let xi;
-  while (xi = x.shift()) {
+  while (xi = input.shift()) {
     const result = f(xi);
     if (typeof result !== 'undefined') output.push(result);
   }

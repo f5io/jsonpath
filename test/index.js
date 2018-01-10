@@ -40,15 +40,19 @@ test('parser', t => {
 });
 
 test('maybe', t => {
-  t.plan(4);
+  t.plan(6);
   const m1 = maybe(3);
   const m2 = maybe();
   const plusOne = x => x + 1;
   const timesTwo = x => x * 2;
+  const or = 'foo';
   t.equal(4, m1.bind(plusOne), 'should return the value inside');
   t.equal(6, m1.map(timesTwo).get(), 'should return the value wrapped');
+  t.equal(6, m1.map(timesTwo).getOr(or), 'should return the value wrapped');
   t.equal(m2, m2.bind(timesTwo), 'should return the same instance');
   t.equal(m2, m2.map(plusOne), 'should return the same instance');
+  t.equal(or, m2.map(plusOne).getOr(or), 'should return the value provided');
+
 });
 
 test('isPlainObject - constructor not a function', t => {

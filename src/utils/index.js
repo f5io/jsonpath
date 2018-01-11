@@ -15,7 +15,7 @@ export const isPlainObject = o => {
   if (isObjectObject(o.constructor.prototype) === false) return false;
   if (o.constructor.prototype.hasOwnProperty('isPrototypeOf') === false) return false;
   return true;
-};
+}
 
 export const mapFilter = f => x => {
   const output = [];
@@ -26,4 +26,57 @@ export const mapFilter = f => x => {
     if (typeof result !== 'undefined') output.push(result);
   }
   return output;
-};
+}
+
+export const pathFilter = f => x => {
+  const output = [];
+  let i = 0, xi;
+  while (xi = x[i]) {
+    const result = f(xi);
+    if (result) output.push([ i ]);
+    i++;
+  }
+  return output;
+}
+
+export const searchFor = (o, p) => {
+  let result = [];
+  for (const k in o) {
+    if (k === p) result = result.concat(o[k]);
+    if (isPlainObject(o[k]) || Array.isArray(o[k]))
+      result = result.concat(searchFor(o[k], p));
+  }
+  return result;
+}
+
+export const searchForPath = (o, p, ps = []) => {
+  let result = [];
+  const coerce = Array.isArray(o) ? Number : x => x;
+  for (const k in o) {
+    if (k === p) result = result.concat([ ps.concat(coerce(k)) ]);
+    if (isPlainObject(o[k]) || Array.isArray(o[k]))
+      result = result.concat(searchForPath(o[k], p, ps.concat(coerce(k))));
+  }
+  return result;
+}
+
+export const join = (paths, to) => {
+  if (!to.length) return paths;
+  const result = [];
+  for (const p of paths) {
+    for (const t of to) {
+      result.push([ ...t, ...p ]);
+    }
+  }
+  return result;
+}
+
+export const slicePaths = (x, start, end = x.length) => {
+  let i = start;
+  const output = [];
+  while (i < end) {
+    output.push([ i ]);
+    i++;
+  }
+  return output;
+}

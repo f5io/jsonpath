@@ -1,9 +1,9 @@
 import test from 'tape';
-import query from '../src';
+import query, { paths } from '../src';
 import tokenizer from '../src/tokenizer';
 import parser from '../src/parser';
 import maybe from '../src/maybe';
-import { isPlainObject, isObject } from '../src/utils';
+import { isPlainObject, isObject, searchForPath } from '../src/utils';
 
 const data = require('./data.json');
 
@@ -21,11 +21,17 @@ const measure = (name, fn, ...args) => {
 };
 
 const runQueries = (test, queries, expected, d = data) => {
-  test.plan(queries.length);
   queries.forEach(q => {
     const qy = measure(`parse: '${q}'`, query, q);
     const result = measure(`query: '${q}'`, qy, d);
     test.deepEquals(result, expected, `'${q}' should return expected results`);
+  });
+};
+
+const runPaths = (test, queries, expected, d = data) => {
+  queries.forEach(q => {
+    const result = measure(`paths: '${q}'`, paths, q, d);
+    test.deepEquals(result, expected, `'${q}' should return expected paths`); 
   });
 };
 
@@ -40,15 +46,19 @@ test('parser', t => {
 });
 
 test('maybe', t => {
-  t.plan(4);
+  t.plan(6);
   const m1 = maybe(3);
   const m2 = maybe();
   const plusOne = x => x + 1;
   const timesTwo = x => x * 2;
+  const or = 'foo';
   t.equal(4, m1.bind(plusOne), 'should return the value inside');
   t.equal(6, m1.map(timesTwo).get(), 'should return the value wrapped');
+  t.equal(6, m1.map(timesTwo).getOr(or), 'should return the value wrapped');
   t.equal(m2, m2.bind(timesTwo), 'should return the same instance');
   t.equal(m2, m2.map(plusOne), 'should return the same instance');
+  t.equal(or, m2.map(plusOne).getOr(or), 'should return the value provided');
+
 });
 
 test('isPlainObject - constructor not a function', t => {
@@ -86,6 +96,7 @@ test('cached queries', t => {
     '$..book[(@.length-1)]'
   ];
   runQueries(t, queries, expected);
+  t.end();
 });
 
 test('recurse failure', t => {
@@ -93,7 +104,10 @@ test('recurse failure', t => {
   const queries = [
     '$..'
   ];
+  const paths = [];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get root', t => {
@@ -101,7 +115,10 @@ test('get root', t => {
   const queries = [
     '$'
   ];
+  const paths = [];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get wildcard', t => {
@@ -109,7 +126,10 @@ test('get wildcard', t => {
   const queries = [
     '$.store.*'
   ];
+  const paths = [ [ 'store' ] ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get expr', t => {
@@ -117,7 +137,12 @@ test('get expr', t => {
   const queries = [
     '$..book[(@.length-1)]'
   ];
+  const paths = [
+    [ 'store', 'book', 3 ]
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get fexpr', t => {
@@ -125,7 +150,12 @@ test('get fexpr', t => {
   const queries = [
     '$..book[?(@.price > 20)]'
   ];
+  const paths = [
+    [ 'store', 'book', 3 ]
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get mexpr', t => {
@@ -134,6 +164,7 @@ test('get mexpr', t => {
     '$..book[!(@.title)]'
   ];
   runQueries(t, queries, expected);
+  t.end();
 });
 
 test('get coerce/mexpr', t => {
@@ -143,6 +174,7 @@ test('get coerce/mexpr', t => {
     '$..book.price<String>'
   ];
   runQueries(t, queries, expected);
+  t.end();
 });
 
 test('coerce <String>', t => {
@@ -179,7 +211,14 @@ test('get slice/union', t => {
     '$..book[1:4]',
     '$..book[1,2,3]'
   ];
+  const paths = [
+    [ 'store', 'book', 1 ],
+    [ 'store', 'book', 2 ],
+    [ 'store', 'book', 3 ],
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('slice - no start', t => {
@@ -187,7 +226,12 @@ test('slice - no start', t => {
   const queries = [
     '$..book[:1]'
   ];
+  const paths = [
+    [ 'store', 'book', 0 ]
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('slice - no end', t => {
@@ -195,7 +239,14 @@ test('slice - no end', t => {
   const queries = [
     '$..book[1:]'
   ];
+  const paths = [
+    [ 'store', 'book', 1 ],
+    [ 'store', 'book', 2 ],
+    [ 'store', 'book', 3 ],
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('mexpr - non-array', t => {
@@ -203,7 +254,12 @@ test('mexpr - non-array', t => {
   const queries = [
     '$.store.bicycle[!(@.price * 2)]'
   ];
+  const paths = [
+    [ 'store', 'bicycle' ]
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get all authors', t => {
@@ -212,7 +268,15 @@ test('get all authors', t => {
     '$..book.author',
     '$..author'
   ];
+  const paths = [
+    [ 'store', 'book', 0, 'author' ],
+    [ 'store', 'book', 1, 'author' ],
+    [ 'store', 'book', 2, 'author' ],
+    [ 'store', 'book', 3, 'author' ],
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get specific author', t => {
@@ -220,10 +284,15 @@ test('get specific author', t => {
   const queries = [
     '$..book.0.author',
     '$..book[?(@.price === 8.95)].author',
-    '$..author[?(@.startsWith("Nigel"))]',
+    '$..book[?(@.author.startsWith("Nigel"))].author',
     '$.store.book[0].author'
   ];
+  const paths = [
+    [ 'store', 'book', 0, 'author' ]
+  ]
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get specific author, title', t => {
@@ -235,7 +304,15 @@ test('get specific author, title', t => {
     '$..book[?(@.price < 10)]["author","title"]',
     '$..book[?(@.title.toLowerCase().indexOf("c") > -1)]["author","title"]',
   ];
+  const paths = [
+    [ 'store', 'book', 0, 'author' ],
+    [ 'store', 'book', 2, 'author' ],
+    [ 'store', 'book', 0, 'title' ],
+    [ 'store', 'book', 2, 'title' ],
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get specific author, title as object', t => {
@@ -253,7 +330,15 @@ test('get specific author, title as object', t => {
     '$..book[?(@.price < 10)]{"author","title"}',
     '$..book[?(@.title.toLowerCase().indexOf("c") > -1)]{"author","title"}',
   ];
+  const paths = [
+    [ 'store', 'book', 0, 'author' ],
+    [ 'store', 'book', 2, 'author' ],
+    [ 'store', 'book', 0, 'title' ],
+    [ 'store', 'book', 2, 'title' ],
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get bicycle with member', t => {
@@ -261,7 +346,12 @@ test('get bicycle with member', t => {
   const queries = [
     '$.store.bicycle["color"]'
   ];
+  const paths = [
+    [ 'store', 'bicycle', 'color' ]
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('get bicycle with omember', t => {
@@ -269,7 +359,44 @@ test('get bicycle with omember', t => {
   const queries = [
     '$.store.bicycle{"color"}'
   ];
+  const paths = [
+    [ 'store', 'bicycle', 'color' ]
+  ];
   runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
+});
+
+test('get authors with member', t => {
+  const expected = data.store.book.map(x => [ x.author ]);
+  const queries = [
+    '$.store.book["author"]'
+  ];
+  const paths = [
+    [ 'store', 'book', 0, 'author' ],
+    [ 'store', 'book', 1, 'author' ],
+    [ 'store', 'book', 2, 'author' ],
+    [ 'store', 'book', 3, 'author' ],
+  ];
+  runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
+});
+
+test('get authors with omember', t => {
+  const expected = data.store.book.map(x => ({ author: x.author }));
+  const queries = [
+    '$.store.book{"author"}'
+  ];
+  const paths = [
+    [ 'store', 'book', 0, 'author' ],
+    [ 'store', 'book', 1, 'author' ],
+    [ 'store', 'book', 2, 'author' ],
+    [ 'store', 'book', 3, 'author' ],
+  ];
+  runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
 });
 
 test('changejs example', t => {
@@ -287,4 +414,5 @@ test('changejs example', t => {
     '$..h[*].foo'
   ];
   runQueries(t, queries, expected, require('./change.json'));
+  t.end();
 });

@@ -12,4 +12,4 @@ function tokenizer(input, output = []) {
   } catch(e) {
     throw new Error(`Found no matching rule: ${input}`);
   }
-};
+}

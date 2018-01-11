@@ -3,7 +3,7 @@ import maybe from './maybe';
 export default transformer;
 
 function transformer(ops) {
-  return function(data) {
-    return ops.reduce((acc, f) => f(acc), maybe(data)).get();
+  return function(data, withPaths) {
+    return ops.reduce((acc, f) => f(acc), { data: maybe(data), path: maybe([]), withPaths });
   }
-};
+}

@@ -12,4 +12,4 @@ function parser(tokens) {
     }
   }, []);
   return ops;
-};
+}

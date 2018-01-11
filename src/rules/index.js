@@ -46,14 +46,12 @@ const rules = {
       const ignored = [ 'union', 'array' ];
 
       const getProps = x =>
-        Array.isArray(x) ?
-          mapFilter(y => y[value])(x) :
-          x[value];
+        Array.isArray(x) ?  mapFilter(y => y[value])(x) : x[value];
 
       const getPaths = x =>
-        Array.isArray(x) && !ignored.includes(prev.type) ?
-          join([ [ value ] ], pathFilter(y => y[value])(x)) :
-          [ [ value ] ];
+        Array.isArray(x) && !ignored.includes(prev.type)
+          ? join([ [ value ] ], pathFilter(y => y[value])(x))
+          : [ [ value ] ];
 
       return acc.concat(({ data, path, withPaths }) => {
         const d = data.map(getProps);
@@ -103,9 +101,7 @@ const rules = {
       const fn = new Function('y', `return ${value.replace(/@/g, 'y')}`);
       
       const getProps = x =>
-        Array.isArray(x) ?
-          x.map((y, i) => fn(y)) :
-          fn(x);
+        Array.isArray(x) ? x.map((y, i) => fn(y)) : fn(x);
 
       return acc.concat(({ data, path, withPaths }) => ({
         data: data.map(getProps), path, withPaths,
@@ -151,9 +147,7 @@ const rules = {
           break;
       }
       const getProps = x =>
-        Array.isArray(x) ?
-          x.map(fn) :
-          fn(x);
+        Array.isArray(x) ? x.map(fn) : fn(x);
 
       return acc.concat(({ data, path, withPaths }) => ({
         data: data.map(getProps), path, withPaths,
@@ -206,14 +200,14 @@ const rules = {
       const prev = arr[i - 1];
       
       const getProps = x =>
-        Array.isArray(x) ?
-          x.map(y => value.reduce((acc, z) => (acc.push(y[z]), acc), [])) :
-          value.reduce((acc, z) => (acc.push(x[z]), acc), []);
+        Array.isArray(x)
+          ? x.map(y => value.reduce((acc, z) => (acc.push(y[z]), acc), []))
+          : value.reduce((acc, z) => (acc.push(x[z]), acc), []);
 
       const getPaths = x =>
-        Array.isArray(x) && prev.type !== 'array' ?
-          join(value.map(x => [ x ]), Array.from(x, (_, i) => [ i ])) :
-          value.map(x => [ x ]);
+        Array.isArray(x) && prev.type !== 'array'
+          ? join(value.map(x => [ x ]), Array.from(x, (_, i) => [ i ]))
+          : value.map(x => [ x ]);
 
       return acc.concat(({ data, path, withPaths }) => {
         const d = data.map(getProps);
@@ -235,14 +229,14 @@ const rules = {
       const prev = arr[i - 1];
 
       const getProps = x =>
-        Array.isArray(x) ?
-          x.map(y => value.reduce((acc, z) => (acc[z] = y[z], acc), {})) :
-          value.reduce((acc, z) => (acc[z] = x[z], acc), {});
+        Array.isArray(x)
+          ? x.map(y => value.reduce((acc, z) => (acc[z] = y[z], acc), {}))
+          : value.reduce((acc, z) => (acc[z] = x[z], acc), {});
 
       const getPaths = x =>
-        Array.isArray(x) && prev.type !== 'array' ?
-          join(value.map(x => [ x ]), Array.from(x, (_, i) => [ i ])) :
-          value.map(x => [ x ]);
+        Array.isArray(x) && prev.type !== 'array'
+          ? join(value.map(x => [ x ]), Array.from(x, (_, i) => [ i ]))
+          : value.map(x => [ x ]);
 
       return acc.concat(({ data, path, withPaths }) => {
         const d = data.map(getProps);

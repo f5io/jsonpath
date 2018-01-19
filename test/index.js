@@ -132,6 +132,17 @@ test('get wildcard', t => {
   t.end();
 });
 
+test('simple prop with no prev', t => {
+  const expected = data.store;
+  const queries = [
+    'store'
+  ]
+  const paths = [ [ 'store' ] ];
+  runQueries(t, queries, expected);
+  runPaths(t, queries, paths);
+  t.end();
+});
+
 test('get expr', t => {
   const expected = data.store.book[3];
   const queries = [

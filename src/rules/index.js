@@ -38,6 +38,7 @@ const rules = {
       let offset = 1;
       let prev = arr[i - offset];
       if (prev && prev.type === 'recurse') return acc;
+      prev = prev || { type: null };
 
       while (prev.type === 'dot') {
         prev = arr[i - (++offset)];

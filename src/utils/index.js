@@ -39,23 +39,27 @@ export const pathFilter = f => x => {
   return output;
 }
 
-export const searchFor = (o, p) => {
+export const searchFor = (o, p, visited = new Set()) => {
   let result = [];
+  if (visited.has(o)) return result;
+  visited.add(o);
   for (const k in o) {
     if (k === p) result = result.concat(o[k]);
     if (isPlainObject(o[k]) || Array.isArray(o[k]))
-      result = result.concat(searchFor(o[k], p));
+      result = result.concat(searchFor(o[k], p, visited));
   }
   return result;
 }
 
-export const searchForPath = (o, p, ps = []) => {
+export const searchForPath = (o, p, ps = [], visited = new Set()) => {
   let result = [];
+  if (visited.has(o)) return result;
+  visited.add(o);
   const coerce = Array.isArray(o) ? Number : x => x;
   for (const k in o) {
     if (k === p) result = result.concat([ ps.concat(coerce(k)) ]);
     if (isPlainObject(o[k]) || Array.isArray(o[k]))
-      result = result.concat(searchForPath(o[k], p, ps.concat(coerce(k))));
+      result = result.concat(searchForPath(o[k], p, ps.concat(coerce(k)), visited));
   }
   return result;
 }

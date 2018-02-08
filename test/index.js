@@ -3,7 +3,7 @@ import query, { paths } from '../src';
 import tokenizer from '../src/tokenizer';
 import parser from '../src/parser';
 import maybe from '../src/maybe';
-import { isPlainObject, isObject, searchForPath } from '../src/utils';
+import { isPlainObject, isObject } from '../src/utils';
 
 const data = require('./data.json');
 
@@ -31,7 +31,7 @@ const runQueries = (test, queries, expected, d = data) => {
 const runPaths = (test, queries, expected, d = data) => {
   queries.forEach(q => {
     const result = measure(`paths: '${q}'`, paths, q, d);
-    test.deepEquals(result, expected, `'${q}' should return expected paths`); 
+    test.deepEquals(result, expected, `'${q}' should return expected paths`);
   });
 };
 
@@ -69,7 +69,7 @@ test('isPlainObject - constructor not a function', t => {
 
 test('isPlainObject - constructor null prototype', t => {
   t.plan(1);
-  function f() {};
+  function f() {}
   f.prototype = null;
   const obj = { constructor: f };
   t.notOk(isPlainObject(obj), 'should return false');
@@ -77,7 +77,7 @@ test('isPlainObject - constructor null prototype', t => {
 
 test('isPlainObject - constructor no isPrototypeOf', t => {
   t.plan(1);
-  function f() {};
+  function f() {}
   delete f.prototype.isPrototypeOf;
   const obj = { constructor: f };
   t.notOk(isPlainObject(obj), 'should return false');
@@ -136,7 +136,7 @@ test('simple prop with no prev', t => {
   const expected = data.store;
   const queries = [
     'store'
-  ]
+  ];
   const paths = [ [ 'store' ] ];
   runQueries(t, queries, expected);
   runPaths(t, queries, paths);
@@ -300,7 +300,7 @@ test('get specific author', t => {
   ];
   const paths = [
     [ 'store', 'book', 0, 'author' ]
-  ]
+  ];
   runQueries(t, queries, expected);
   runPaths(t, queries, paths);
   t.end();
@@ -407,6 +407,29 @@ test('get authors with omember', t => {
   ];
   runQueries(t, queries, expected);
   runPaths(t, queries, paths);
+  t.end();
+});
+
+test('circular reference guard', t => {
+  const foo = {
+    a: 1,
+  };
+  const bar = {
+    b: 2,
+    foo,
+  };
+  foo.bar = bar;
+  const data = {
+    bar,
+    foo,
+  };
+
+  const expected = [ bar.b ];
+  const path = [ [ 'bar', 'b' ] ];
+  t.doesNotThrow(() => query('$..b', data), 'should not throw a stack size exceeded');
+  t.deepEquals(query('$..b', data), expected, 'should return expected results');
+  t.doesNotThrow(() => paths('$..b', data), 'should not throw stack size exceeded');
+  t.deepEquals(paths('$..b', data), path, 'should return expected results');
   t.end();
 });
 

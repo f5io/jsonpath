@@ -33,7 +33,7 @@ const rules = {
   },
   [5]: {
     type: 'prop',
-    re: /^([_A-Za-z][^\W]*)/,
+    re: /^([_\-A-Za-z][^\.|\[|\<|\{]*)/,
     parse: function prop(acc, { value }, i, arr) {
       let offset = 1;
       let prev = arr[i - offset];
@@ -195,7 +195,7 @@ const rules = {
   },
   [25]: {
     type: 'member',
-    re: /^(?:[\'|\"](?:[^\W]+)[\'|\"]\,?\s?)+/,
+    re: /^(?:[\'|\"](?:[^\'|\"]+)[\'|\"]\,?\s?)+/,
     map: m => m[0].split(',').filter(Identity).map(x => x.trim().slice(1, -1)),
     parse: function member(acc, { value }, i, arr) {
       const prev = arr[i - 1];
@@ -224,7 +224,7 @@ const rules = {
   },
   [26]: {
     type: 'omember',
-    re: /^\{(?:[\'|\"](?:[^\W]+)[\'|\"]\,?\s?)+\}/,
+    re: /^\{(?:[\'|\"](?:[^\'|\"]+)[\'|\"]\,?\s?)+\}/,
     map: m => m[0].slice(1, -1).split(',').filter(Identity).map(x => x.trim().slice(1, -1)),
     parse: function omember(acc, { value }, i, arr) {
       const prev = arr[i - 1];

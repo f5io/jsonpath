@@ -99,6 +99,28 @@ test('cached queries', t => {
   t.end();
 });
 
+test('support chars', t => {
+  const d = {
+    a0: 1,
+    'a-one': 2,
+  };
+  const q1 = [
+    '$.a0',
+  ];
+  const q2 = [
+    '$.a-one',
+  ];
+  runQueries(t, q1, 1, d);
+  runQueries(t, [ '${"a0"}' ], { a0: 1 }, d);
+  runQueries(t, [ '$["a0"]' ], [ 1 ], d);
+  runPaths(t, q1, [ [ 'a0' ] ], d);
+  runQueries(t, q2, 2, d);
+  runQueries(t, [ '${"a-one"}' ], { 'a-one': 2 }, d);
+  runQueries(t, [ '$["a-one"]' ], [ 2 ], d);
+  runPaths(t, q2, [ [ 'a-one' ] ], d);
+  t.end();
+});
+
 test('recurse failure', t => {
   const expected = data;
   const queries = [

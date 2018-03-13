@@ -103,21 +103,23 @@ test('support chars', t => {
   const d = {
     a0: 1,
     'a-one': 2,
+    a2: {
+      a0: 3,
+      'a-one': 4,
+    }
   };
-  const q1 = [
-    '$.a0',
-  ];
-  const q2 = [
-    '$.a-one',
-  ];
-  runQueries(t, q1, 1, d);
+  runQueries(t, [ '$.a0' ], 1, d);
   runQueries(t, [ '${"a0"}' ], { a0: 1 }, d);
   runQueries(t, [ '$["a0"]' ], [ 1 ], d);
-  runPaths(t, q1, [ [ 'a0' ] ], d);
-  runQueries(t, q2, 2, d);
+  runPaths(t, [ '$.a0' ], [ [ 'a0' ] ], d);
+  runQueries(t, [ '$.a-one' ], 2, d);
   runQueries(t, [ '${"a-one"}' ], { 'a-one': 2 }, d);
   runQueries(t, [ '$["a-one"]' ], [ 2 ], d);
-  runPaths(t, q2, [ [ 'a-one' ] ], d);
+  runPaths(t, [ '$.a-one' ], [ [ 'a-one' ] ], d);
+  runQueries(t, [ '$..a0' ], [ 1, 3 ], d);
+  runPaths(t, [ '$..a0' ], [ [ 'a0' ], [ 'a2', 'a0' ] ], d);
+  runQueries(t, [ '$..a-one' ], [ 2, 4 ], d);
+  runPaths(t, [ '$..a-one' ], [ [ 'a-one' ], [ 'a2', 'a-one' ] ], d);
   t.end();
 });
 

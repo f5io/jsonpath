@@ -1,6 +1,6 @@
 import tokenizer from '../tokenizer';
 import parser from '../parser';
-import { Identity, head, map, join, mapFilter, pathFilter, slicePaths, searchFor, searchForPath } from '../utils';
+import { Identity, head, join, mapFilter, pathFilter, slicePaths, searchFor, searchForPath } from '../utils';
 
 const rules = {
   [1]: {
@@ -21,19 +21,25 @@ const rules = {
     parse: function recurse(acc, { value }, i, arr) {
       const next = arr[i + 1];
       if (next && next.type === 'prop')
-        return acc.concat(({ data, path, withPaths }) => ({
-          data: data.map(x => searchFor(x, next.value)),
-          path: withPaths
-            ? path.chain(p => data.map(x => join(searchForPath(x, next.value), p)))
-            : path,
-          withPaths,
-        }));
+        return acc.concat(({ data, path, withPaths }) => {
+          const d = data.map(x => {
+            const result = searchFor(x, next.value);
+            return result.length ? result : void 0;
+          });
+          return ({
+            data: d,
+            path: withPaths
+              ? path.chain(p => d.chain(_ => data.map(x => join(searchForPath(x, next.value), p))))
+              : path,
+            withPaths,
+          });
+        });
       else return acc;
     }
   },
   [5]: {
     type: 'prop',
-    re: /^([_\-A-Za-z][^\.|\[|\<|\{]*)/,
+    re: /^([_\-A-Za-z][^.|[|<|{]*)/,
     parse: function prop(acc, { value }, i, arr) {
       let offset = 1;
       let prev = arr[i - offset];
@@ -47,7 +53,7 @@ const rules = {
       const ignored = [ 'union', 'array' ];
 
       const getProps = x =>
-        Array.isArray(x) ?  mapFilter(y => y[value])(x) : x[value];
+        Array.isArray(x) ? mapFilter(y => y[value])(x) : x[value];
 
       const getPaths = x =>
         Array.isArray(x) && !ignored.includes(prev.type)
@@ -62,7 +68,7 @@ const rules = {
             ? path.chain(p => d.chain(_ => data.map(x => join(getPaths(x), p))))
             : path,
           withPaths,
-        })
+        });
       });
     }
   },
@@ -72,7 +78,7 @@ const rules = {
     map: m => tokenizer(m[1]),
     parse: function array(acc, { value }, i, arr) {
       const prev = arr[i - 1];
-      const output = parser([ { type: prev.type, parse: Identity }, ...value]);
+      const output = parser([ { type: prev.type, parse: Identity }, ...value ]);
       return acc.concat(...output);
     }
   },
@@ -83,24 +89,24 @@ const rules = {
     parse: function expr(acc, { value }) {
       const fn = new Function('y', `return ${value.replace(/@/g, 'y')}`);
       return acc.concat(({ data, path, withPaths }) => {
-        const d = data.map(x => x[fn(x)]); 
+        const d = data.map(x => x[fn(x)]);
         return ({
           data: d,
           path: withPaths
             ? path.chain(p => d.chain(_ => data.map(x => join([ [ fn(x) ] ], p))))
             : path,
           withPaths,
-        })
+        });
       });
     }
   },
   [11]: {
     type: 'mexpr',
-    re: /^\!\(([^$]+)\)/,
+    re: /^!\(([^$]+)\)/,
     map: m => m[1],
     parse: function mexpr(acc, { value }) {
       const fn = new Function('y', `return ${value.replace(/@/g, 'y')}`);
-      
+
       const getProps = x =>
         Array.isArray(x) ? x.map((y, i) => fn(y)) : fn(x);
 
@@ -123,13 +129,13 @@ const rules = {
             ? path.chain(p => d.chain(_ => data.map(x => join(pathFilter(fn)(x), p))))
             : path,
           withPaths,
-        })
+        });
       });
     }
   },
   [15]: {
     type: 'coerce',
-    re: /^\<(String|Number|int|float)\>$/,
+    re: /^<(String|Number|int|float)>$/,
     map: m => m[1],
     parse: function coerce(acc, { value }) {
       let fn;
@@ -157,7 +163,7 @@ const rules = {
   },
   [17]: {
     type: 'slice',
-    re: /^(-?(?:0|[1-9][0-9]*))?\:(-?(?:0|[1-9][0-9]*))?(\:(-?(?:0|[1-9][0-9]*))?)?/,
+    re: /^(-?(?:0|[1-9][0-9]*))?:(-?(?:0|[1-9][0-9]*))?(:(-?(?:0|[1-9][0-9]*))?)?/,
     map: m => ({
       start: Number(m[1] || '0'),
       end: Number(m[2]),
@@ -178,7 +184,7 @@ const rules = {
   },
   [22]: {
     type: 'union',
-    re: /^((0|[1-9][0-9]*)\,?)+/,
+    re: /^((0|[1-9][0-9]*),?)+/,
     map: m => m[0].split(',').filter(Identity).map(Number),
     parse: function union(acc, { value }) {
       return acc.concat(({ data, path, withPaths }) => {
@@ -195,11 +201,11 @@ const rules = {
   },
   [25]: {
     type: 'member',
-    re: /^(?:[\'|\"](?:[^\'|\"]+)[\'|\"]\,?\s?)+/,
+    re: /^(?:['|"](?:[^'|"]+)['|"],?\s?)+/,
     map: m => m[0].split(',').filter(Identity).map(x => x.trim().slice(1, -1)),
     parse: function member(acc, { value }, i, arr) {
       const prev = arr[i - 1];
-      
+
       const getProps = x =>
         Array.isArray(x)
           ? x.map(y => value.reduce((acc, z) => (acc.push(y[z]), acc), []))
@@ -218,13 +224,13 @@ const rules = {
             ? path.chain(p => d.chain(_ => data.map(x => join(getPaths(x), p))))
             : path,
           withPaths,
-        })
+        });
       });
     }
   },
   [26]: {
     type: 'omember',
-    re: /^\{(?:[\'|\"](?:[^\'|\"]+)[\'|\"]\,?\s?)+\}/,
+    re: /^\{(?:['|"](?:[^'|"]+)['|"],?\s?)+\}/,
     map: m => m[0].slice(1, -1).split(',').filter(Identity).map(x => x.trim().slice(1, -1)),
     parse: function omember(acc, { value }, i, arr) {
       const prev = arr[i - 1];
@@ -247,7 +253,7 @@ const rules = {
             ? path.chain(p => d.chain(_ => data.map(x => join(getPaths(x), p))))
             : path,
           withPaths,
-        })
+        });
       });
     }
   }

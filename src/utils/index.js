@@ -25,7 +25,7 @@ export const mapFilter = f => x => {
     const result = f(xi);
     if (typeof result !== 'undefined') output.push(result);
   }
-  return output;
+  return output.length ? output : void 0;
 }
 
 export const pathFilter = f => x => {

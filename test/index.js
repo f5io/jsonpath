@@ -123,6 +123,19 @@ test('support chars', t => {
   t.end();
 });
 
+test('paths into empty array', t => {
+  const data = { a: [ { b: 1 }, { a: 2 }, { b: 3 } ] };
+  runQueries(t, [ 'a.c' ], void 0, data);
+  runPaths(t, [ 'a.c' ], [], data);
+  runQueries(t, [ '$..c' ], void 0, data);
+  runPaths(t, [ '$..c' ], [], data);
+  runQueries(t, [ 'a.b' ], [ 1, 3 ], data);
+  runPaths(t, [ 'a.b' ], [ [ 'a', 0, 'b' ], [ 'a', 2, 'b' ] ], data);
+  runQueries(t, [ '$..b' ], [ 1, 3 ], data);
+  runPaths(t, [ '$..b' ], [ [ 'a', 0, 'b' ], [ 'a', 2, 'b' ] ], data);
+  t.end();
+});
+
 test('recurse failure', t => {
   const expected = data;
   const queries = [

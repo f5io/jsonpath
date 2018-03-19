@@ -13,7 +13,8 @@ function factory(type) {
     if (!cache.has(q)) cache.set(q, transformer(parser(tokenizer(q))));
     const fn = cache.get(q);
     const paths = withPaths.includes(type);
-    if (data === null) return d => fn(d, paths)[type].get();
-    return fn(data, paths)[type].get();
+    const def = type === 'path' ? [] : void 0;
+    if (data === null) return d => fn(d, paths)[type].getOr(def);
+    return fn(data, paths)[type].getOr(def);
   }
 }

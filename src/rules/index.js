@@ -260,7 +260,7 @@ const rules = {
 };
 
 const regexString = [];
-for (let k in rules) {
+for (let k of rules) {
   const { re } = rules[k];
   regexString.push(`(${re.source})`);
 }
